@@ -1,0 +1,56 @@
+<html>
+  <head>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript">
+      google.charts.load('current', {'packages': ['line', 'corechart']});
+      google.charts.setOnLoadCallback(drawChart);
+
+      function drawChart() {
+
+        var data = new google.visualization.DataTable();
+        data.addColumn('date', 'Date');
+        data.addColumn('number', 'tc');
+        data.addColumn('number', 'qi');
+
+        data.addRows([
+          {% for stat in stats -%}
+            [new Date({{stat.time.year}},{{stat.time.month}},{{stat.time.day}},{{stat.time.hour}},{{stat.time.minute}}),
+              {{-stat.tc-}},
+              {{-stat.qi-}}
+            ],
+          {% endfor -%}
+        ]);
+
+        var options = {
+          chart: {
+            title: '{{user.username}}\'s stats',
+          },
+          hAxis: {showTextEvery: 5},
+          width: 900,
+          height: 500,
+          series: [
+            {targetAxisIndex: 0},
+            {targetAxisIndex: 1}
+          ]
+        };
+
+        //var chart = new google.charts.Line(document.getElementById('linechart'));
+        var chart = new google.visualization.{{charttype}}(document.getElementById('linechart'));
+
+        chart.draw(data, options);
+      }
+    </script>
+  </head>
+  <body>
+    <a href='{{url_for('index')}}'>Index</a>
+    <ul>
+        {% set path = url_for('stats', username=user.username) -%}
+        <li {% if request.path == path %} class='active' {% endif %}><a href={{path}}>All</a></li>
+        {% for period in ['hourly', 'daily', 'weekly', 'monthly', 'yearly'] %}
+            {%- set path = url_for('stats_diff', username=user.username, period=period) -%}
+            <li {% if request.path == path %} class='active' {% endif %}><a href={{path}}>{{period}}</a></li>
+        {% endfor -%}
+    </ul>
+    <div id="linechart" style="width: 900px; height: 500px"></div>
+  </body>
+</html>

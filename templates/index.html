@@ -1,0 +1,21 @@
+<html>
+    <body>
+    {% for period, top in top_tc %}
+        <h3>{{period}} tc earnings</h3>
+        <ol>
+        {% for user in top -%}
+            <li><a href="{{url_for('stats', username=user.username)}}">{{user.username}}</a> {{user.current_tc - user.tc}}</li>
+        {% endfor -%}
+        </ol>
+    {% endfor -%}
+
+    {% for period, top in top_qi -%}
+        <h3>{{period}} qi earnings</h3>
+        <ol>
+        {% for user in top -%}
+            <li><a href="{{url_for('stats', username=user.username)}}">{{user.username}}</a> {{user.current_qi - user.qi}}</li>
+        {% endfor -%}
+        </ol>
+    {% endfor -%}
+    </body>
+</html>
