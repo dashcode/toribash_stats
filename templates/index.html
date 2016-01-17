@@ -1,21 +1,80 @@
 <html>
-    <body>
-    {% for period, top in top_tc %}
-        <h3>{{period}} tc earnings</h3>
-        <ol>
-        {% for user in top -%}
-            <li><a href="{{url_for('stats', username=user.username)}}">{{user.username}}</a> {{user.current_tc - user.tc}}</li>
-        {% endfor -%}
-        </ol>
-    {% endfor -%}
-
-    {% for period, top in top_qi -%}
-        <h3>{{period}} qi earnings</h3>
-        <ol>
-        {% for user in top -%}
-            <li><a href="{{url_for('stats', username=user.username)}}">{{user.username}}</a> {{user.current_qi - user.qi}}</li>
-        {% endfor -%}
-        </ol>
-    {% endfor -%}
-    </body>
+  <head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+    <script>
+      $(function() {
+        $("form").submit(function() {
+          window.location = window.location.protocol + '//' + window.location.host + '/stats/' + $("form input").val();
+          return false;
+        });
+      });
+    </script>
+  </head>
+  <body>
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <ul class=flashes>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+    <a href="{{url_for('online_users')}}">Online users</a>
+    <form>
+      <input type="text" placeholder="Search User">
+    </form>
+    <table>
+      <tr>
+        <td>
+          {% for period, top in top_tc %}
+            <h3>{{period}} tc earnings</h3>
+            <ol>
+              {% for user in top -%}
+                <li><a href="{{url_for('stats', username=user.username)}}">{{user.username}}</a> {{user.current_tc - user.tc}}</li>
+              {% endfor -%}
+            </ol>
+          {% endfor -%}
+        </td>
+        <td>
+          {% for period, top in top_tc_spenders -%}
+            <h3>{{period}} tc spent</h3>
+            <ol>
+              {% for user in top -%}
+                <li><a href="{{url_for('stats', username=user.username)}}">{{user.username}}</a> {{user.tc - user.current_tc}}</li>
+              {% endfor -%}
+            </ol>
+          {% endfor -%}
+        </td>
+        <td>
+          {% for period, top in top_qi -%}
+            <h3>{{period}} qi earnings</h3>
+            <ol>
+              {% for user in top -%}
+                <li><a href="{{url_for('stats', username=user.username)}}">{{user.username}}</a> {{user.current_qi - user.qi}}</li>
+              {% endfor -%}
+            </ol>
+          {% endfor -%}
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <h3>Top tc</h3>
+          <ol>
+            {% for user in top_tc_all -%}
+              <li><a href="{{url_for('stats', username=user.username)}}">{{user.username}}</a> {{user.tc}}</li>
+            {% endfor -%}
+          </ol>
+        </td>
+        <td>
+          <h3>Top qi</h3>
+          <ol>
+            {% for user in top_qi_all -%}
+              <li><a href="{{url_for('stats', username=user.username)}}">{{user.username}}</a> {{user.qi}}</li>
+            {% endfor -%}
+          </ol>
+        </td>
+      </tr>
+    </table>
+  </body>
 </html>

@@ -25,7 +25,7 @@ class Stat(db.Model):
 
     tc = db.Column(db.Integer)
     qi = db.Column(db.Integer)
-    
+
     time = db.Column(db.DateTime, primary_key=True)
 
     def __init__(self, user, tc, qi, time=None):
@@ -38,3 +38,5 @@ class Stat(db.Model):
 
     def __repr__(self):
         return '<Stat tc=%r qi=%r>' % (self.tc, self.qi)
+
+db.Index('user_id_time', Stat.user_id, Stat.time)
