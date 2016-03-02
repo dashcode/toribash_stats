@@ -58,23 +58,22 @@ def index():
         for period, period_length in periods.items():
             g.cursor.execute("""
                 SELECT *
-                FROM stat as stat2
-                JOIN user ON id=user_id
-                GROUP BY user_id
+                FROM user
                 ORDER BY IFNULL((
-                    SELECT {0} 
-                    FROM stat
-                    WHERE user_id=stat2.user_id AND UNIX_TIMESTAMP(time) > UNIX_TIMESTAMP() - %s
-                    ORDER BY time ASC
-                    LIMIT 1
-                ), {2}) - (
                     SELECT {0}
                     FROM stat
-                    WHERE user_id=stat2.user_id
+                    WHERE user.id=stat.user_id AND UNIX_TIMESTAMP(time) > UNIX_TIMESTAMP() - %s
+                    ORDER BY time ASC
+                    LIMIT 1
+                ), %s) - (
+                    SELECT {0}
+                    FROM stat
+                    WHERE user.id=stat.user_id
                     ORDER BY time DESC
                     LIMIT 1
                 ) {1}
-                LIMIT 10;""".format(tc_qi, order, ifnull), (period_length,))
+                LIMIT 10;
+            """.format(tc_qi, order), (period_length, ifnull))
 
             period_earnings = []
             for user in g.cursor.fetchall():
