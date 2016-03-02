@@ -86,10 +86,17 @@ def main():
 
         for page, users_chunk in enumerate(chunkify(usernames, 15)):
             logger.info('Downloading user stats %i/%i', page, pages)
-            users_info = requests.get(BASE_URL + 'tori_stats.php', params={
-                'format': 'json',
-                'username': ','.join(users_chunk)
-            }).json()
+            for i in range(5):
+                try:
+                    users_info = requests.get(BASE_URL + 'tori_stats.php', params={
+                        'format': 'json',
+                        'username': ','.join(users_chunk)
+                    }).json()
+                    break
+                except Exception:
+                    time.sleep(2 ** i)
+            else:
+                continue
 
             if type(users_info) is not list:
                 users_info = [users_info]
