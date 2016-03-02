@@ -81,19 +81,22 @@ def main():
         logger.info('Downloading client list')
         clients = get_clients()
         usernames = list(set(client['username'] for client in clients))
-        pages = len(usernames) / 25
+        pages = len(usernames) / 15
         queries = []
 
-        for page, users_chunk in enumerate(chunkify(usernames, 25)):
+        for page, users_chunk in enumerate(chunkify(usernames, 15)):
             logger.info('Downloading user stats %i/%i', page, pages)
-            users_info = requests.get(BASE_URL + 'bank_ajax.php', params={
-                'bank_ajax': 'get_userinfo',
+            users_info = requests.get(BASE_URL + 'tori_stats.php', params={
+                'format': 'json',
                 'username': ','.join(users_chunk)
-            }).json()['users']
+            }).json()
+
+            if type(users_info) is not list:
+                users_info = [users_info]
 
             for user_info in users_info:
                 db.session.add(Stat(get_user(user_info['username']),
-                                    user_info['balance'],
+                                    user_info['tc'],
                                     user_info['qi']))
 
             db.session.commit()
