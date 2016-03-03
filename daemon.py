@@ -107,7 +107,7 @@ def main():
                          current_elo, current_posts, current_achiev_progress)
                         VALUES(%s, %s, %s, %s, %s, %s, %s)
                     """, (user_info['username'], user_info['tc'],
-                          user_info['qi'], users_info['winratio'],
+                          user_info['qi'], user_info['winratio'],
                           user_info['elo'], user_info['posts'],
                           user_info['achiev_progress']))
 
@@ -118,7 +118,7 @@ def main():
                         current_tc=%s, current_qi=%s, current_winratio=%s
                         current_elo=%s, current_posts=%s, current_achiev_progress=%s
                         WHERE id=%s
-                    """, (user_info['tc'], user_info['qi'], users_info['winratio'],
+                    """, (user_info['tc'], user_info['qi'], user_info['winratio'],
                           user_info['elo'], user_info['posts'],
                           user_info['achiev_progress'], user['id']))
                     user_id = user['id']
@@ -128,7 +128,7 @@ def main():
                     (user_id, tc, qi, time, winratio, elo, posts, achiev_progress)
                     VALUES(%s, %s, %s, UTC_TIMESTAMP(), %s, %s, %s, %s)
                 """, (user_id, user_info['tc'], user_info['qi'],
-                      users_info['winratio'], user_info['elo'],
+                      user_info['winratio'], user_info['elo'],
                       user_info['posts'], user_info['achiev_progress']))
 
             db.commit()
