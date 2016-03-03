@@ -74,6 +74,14 @@
             {% endfor -%}
           </ol>
         </td>
+        <td>
+          <h3>Top win ratio</h3>
+          <ol>
+            {% for user in top_winratio_all -%}
+              <li><a href="{{url_for('stats', username=user.username)}}">{{user.username}}</a> {{user.winratio}}</li>
+            {% endfor -%}
+          </ol>
+        </td>
       </tr>
     </table>
   </body>

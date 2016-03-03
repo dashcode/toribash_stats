@@ -11,12 +11,20 @@
         data.addColumn('date', 'Date');
         data.addColumn('number', 'tc');
         data.addColumn('number', 'qi');
+        data.addColumn('number', 'winratio');
+        data.addColumn('number', 'elo');
+        data.addColumn('number', 'posts');
+        data.addColumn('number', 'achievement progress');
 
         data.addRows([
           {% for stat in stats -%}
             [new Date({{stat.time.year}},{{stat.time.month - 1}},{{stat.time.day}},{{stat.time.hour}},{{stat.time.minute}}),
               {{-stat.tc-}},
-              {{-stat.qi-}}
+              {{-stat.qi-}},
+              {{-stat.winratio or 0.0-}},
+              {{-stat.elo or 0.0-}},
+              {{-stat.posts or 0-}},
+              {{-stat.achiev_progress or 0-}}
             ],
           {% endfor -%}
         ]);
@@ -35,7 +43,11 @@
           height: 500,
           series: [
             {targetAxisIndex: 0},
-            {targetAxisIndex: 1}
+            {targetAxisIndex: 1},
+            {targetAxisIndex: 2},
+            {targetAxisIndex: 3},
+            {targetAxisIndex: 4},
+            {targetAxisIndex: 5}
           ]
         };
 

@@ -126,12 +126,22 @@ def index():
     """)
     top_qi_all = g.cursor.fetchall()
 
+    g.cursor.execute("""
+        SELECT current_winratio as winratio, username
+        FROM user
+        WHERE current_qi >= 500
+        ORDER BY current_winratio DESC
+        LIMIT 10
+    """)
+    top_winratio_all = g.cursor.fetchall()
+
     return render_template('index.html',
                            top_tc=top_tc,
                            top_qi=top_qi,
                            top_tc_spenders=top_tc_spenders,
                            top_tc_all=top_tc_all,
-                           top_qi_all=top_qi_all)
+                           top_qi_all=top_qi_all,
+                           top_winratio_all=top_winratio_all)
 
 @app.route('/stats/<username>')
 @cache.cached(timeout=5 * 60)
@@ -182,8 +192,18 @@ def stats_diff(username, period):
         time = (s['time'] for s in stats)
         tc = diff(s['tc'] for s in stats)
         qi = diff(s['qi'] for s in stats)
+        winratio = diff(s['winratio'] for s in stats)
+        elo = diff(s['elo'] for s in stats)
+        posts = diff(s['posts'] for s in stats)
+        achiev_progress = diff(s['achiev_progress'] for s in stats)
 
-        stats = ({'time': time_, 'tc': tc_, 'qi': qi_} for time_, tc_, qi_ in zip(time, tc, qi))
+        stats = ({'time': time_,
+                  'tc': tc_,
+                  'qi': qi_,
+                  'winratio': winratio,
+                  'elo': elo,
+                  'posts': posts,
+                  'achiev_progress': achiev_progress} for time_, tc_, qi_ in zip(time, tc, qi))
 
         charttype = 'ColumnChart'
     else:
