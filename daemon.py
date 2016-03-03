@@ -115,7 +115,7 @@ def main():
                 else:
                     cursor.execute("""
                         UPDATE user SET
-                        current_tc=%s, current_qi=%s, current_winratio=%s
+                        current_tc=%s, current_qi=%s, current_winratio=%s,
                         current_elo=%s, current_posts=%s, current_achiev_progress=%s
                         WHERE id=%s
                     """, (user_info['tc'], user_info['qi'], user_info['winratio'],
