@@ -1,13 +1,15 @@
 #! /usr/bin/python3
 
-import functools
+import json
 import logging
-import operator
 import requests
 import socket
 import time
 
-from model import db, User, Stat
+import MySQLdb
+import MySQLdb.cursors
+
+config = json.load(open('config.json'))
 
 logger = logging.getLogger('daemon')
 logger.setLevel(logging.DEBUG)
@@ -65,15 +67,8 @@ BASE_URL = 'http://forum.toribash.com/'
 UPDATE_CYCLE = 5 * 60
 
 def main():
-    #@functools.lru_cache(maxsize=65536)
-    def get_user(username):
-        user = User.query.filter_by(username=username).first()
-
-        if user is None:
-            user = User(username)
-            db.session.add(user)
-
-        return user
+    db = MySQLdb.connect(**config['db'])
+    cursor = db.cursor(MySQLdb.cursors.DictCursor)
 
     while True:
         loop_start = time.monotonic()
@@ -102,11 +97,41 @@ def main():
                 users_info = [users_info]
 
             for user_info in users_info:
-                db.session.add(Stat(get_user(user_info['username']),
-                                    user_info['tc'],
-                                    user_info['qi']))
+                cursor.execute("SELECT * FROM user WHERE username=%s", (user_info['username'],))
+                user = cursor.fetchone()
 
-            db.session.commit()
+                if user is None:
+                    cursor.execute("""
+                        INSERT INTO user
+                        (username, current_tc, current_qi, current_winratio,
+                         current_elo, current_posts, current_achiev_progress)
+                        VALUES(%s, %s, %s, %s, %s, %s, %s)
+                    """, (user_info['username'], user_info['tc'],
+                          user_info['qi'], users_info['winratio'],
+                          user_info['elo'], user_info['posts'],
+                          user_info['achiev_progress']))
+
+                    user_id = cursor.lastrowid
+                else:
+                    cursor.execute("""
+                        UPDATE user SET
+                        current_tc=%s, current_qi=%s, current_winratio=%s
+                        current_elo=%s, current_posts=%s, current_achiev_progress=%s
+                        WHERE id=%s
+                    """, (user_info['tc'], user_info['qi'], users_info['winratio'],
+                          user_info['elo'], user_info['posts'],
+                          user_info['achiev_progress'], user['id']))
+                    user_id = user['id']
+
+                cursor.execute("""
+                    INSERT INTO stat
+                    (user_id, tc, qi, time, winratio, elo, posts, achiev_progress)
+                    VALUES(%s, %s, %s, UTC_TIMESTAMP(), %s, %s, %s, %s)
+                """, (user_id, user_info['tc'], user_info['qi'],
+                      users_info['winratio'], user_info['elo'],
+                      user_info['posts'], user_info['achiev_progress']))
+
+            db.commit()
 
         loop_length = time.monotonic() - loop_start
         sleep_time = max(0, UPDATE_CYCLE - loop_length)

@@ -35,6 +35,11 @@ periods = OrderedDict([
     #('yearly',  365 * 24 * 60 * 60)
 ])
 
+periods_length = OrderedDict([
+    ('last_day',        24 * 60 * 60),
+    ('last_month', 30 * 24 * 60 * 60)
+])
+
 @app.before_request
 def before_request():
     g.db = MySQLdb.connect(**config['db'])
@@ -50,9 +55,6 @@ def index():
     top_tc = []
     top_qi = []
     top_tc_spenders = []
-
-    #g.cursor.execute("SET profiling_history_size = 100")
-    #g.cursor.execute("SET profiling = 1")
 
     for tc_qi, top_list, order, ifnull in (('tc', top_tc, 'ASC', 2**32-1), ('qi', top_qi, 'ASC', 2**32-1), ('tc', top_tc_spenders, 'DESC', 0)):
         for period, period_length in periods.items():
@@ -77,7 +79,6 @@ def index():
 
             period_earnings = []
             for user in g.cursor.fetchall():
-                #g.cursor.execute("SET profiling = 0")
                 g.cursor.execute("""
                     SELECT {} as amount
                     FROM stat
@@ -107,32 +108,23 @@ def index():
                     tc_qi: old_amount['amount'],
                     'current_' + tc_qi: current_amount['amount']
                 })
-            #g.cursor.execute("SET profiling = 1")
             top_list.append((period, period_earnings))
 
-    top_tc_all = []
-    top_qi_all = []
+    g.cursor.execute("""
+        SELECT current_tc as tc, username
+        FROM user
+        ORDER BY current_tc DESC
+        LIMIT 10
+    """)
+    top_tc_all = g.cursor.fetchall()
 
-    for tc_qi, top_result in (('tc', top_tc_all), ('qi', top_qi_all)):
-        g.cursor.execute("""
-            SELECT {0}, user.username as username
-            FROM stat as stat1
-            JOIN user ON user.id = stat1.user_id
-            WHERE stat1.time = (
-                SELECT MAX(stat2.time)
-                FROM stat as stat2
-                WHERE stat1.user_id = stat2.user_id
-            )
-            ORDER BY {0} DESC
-            LIMIT 10
-        """.format(tc_qi))
-
-        top_result.extend(g.cursor.fetchall())
-
-    #g.cursor.execute("SHOW PROFILES")
-
-    #import pprint
-    #pprint.pprint(g.cursor.fetchall())
+    g.cursor.execute("""
+        SELECT current_qi as qi, username
+        FROM user
+        ORDER BY current_qi DESC
+        LIMIT 10
+    """)
+    top_qi_all = g.cursor.fetchall()
 
     return render_template('index.html',
                            top_tc=top_tc,
@@ -157,7 +149,7 @@ def stats(username):
                            user=user,
                            stats=stats,
                            charttype='LineChart',
-                           periods=periods.keys())
+                           periods=list(periods.keys()) + list(periods_length.keys()))
 
 @app.route('/stats/<username>/<period>')
 @cache.cached(timeout=5 * 60)
@@ -167,32 +159,50 @@ def stats_diff(username, period):
         for e in it:
             yield e - prev
             prev = e
-    if period not in periods:
+
+    if period not in periods and period not in periods_length:
         abort(404)
 
     g.cursor.execute("SELECT * FROM user WHERE username=%s", (username,))
     user = g.cursor.fetchone()
 
-    g.cursor.execute("""
-        SELECT *
-        FROM stat
-        WHERE user_id=%s
-        GROUP BY UNIX_TIMESTAMP(time) DIV %s
-    """, (user['id'], periods[period]))
+    if not user:
+        abort(404)
 
-    stats = g.cursor.fetchall()
+    if period in periods:
+        g.cursor.execute("""
+            SELECT *
+            FROM stat
+            WHERE user_id=%s
+            GROUP BY UNIX_TIMESTAMP(time) DIV %s
+        """, (user['id'], periods[period]))
 
-    time = (s['time'] for s in stats)
-    tc = diff(s['tc'] for s in stats)
-    qi = diff(s['qi'] for s in stats)
+        stats = g.cursor.fetchall()
 
-    stats = ({'time': time_, 'tc': tc_, 'qi': qi_} for time_, tc_, qi_ in zip(time, tc, qi))
+        time = (s['time'] for s in stats)
+        tc = diff(s['tc'] for s in stats)
+        qi = diff(s['qi'] for s in stats)
+
+        stats = ({'time': time_, 'tc': tc_, 'qi': qi_} for time_, tc_, qi_ in zip(time, tc, qi))
+
+        charttype = 'ColumnChart'
+    else:
+        g.cursor.execute("""
+            SELECT * FROM stat
+            WHERE
+                user_id=%s AND
+                UNIX_TIMESTAMP(time) > UNIX_TIMESTAMP() - %s
+        """, (user['id'], periods_length[period]))
+
+        stats = g.cursor.fetchall()
+
+        charttype = 'LineChart'
 
     return render_template('stats.html',
                            user=user,
                            stats=stats,
-                           charttype='ColumnChart',
-                           periods=periods.keys())
+                           charttype=charttype,
+                           periods=list(periods.keys()) + list(periods_length.keys()))
 
 @app.route('/online_users')
 @cache.cached(timeout=5 * 60)
