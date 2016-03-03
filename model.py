@@ -11,9 +11,13 @@ db = SQLAlchemy(app)
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(32), unique=True)
+    current_tc = db.Column(db.Integer)
+    current_qi = db.Column(db.Integer)
 
-    def __init__(self, username):
+    def __init__(self, username, current_tc, current_qi):
         self.username = username
+        self.current_tc = current_tc
+        self.current_qi = current_qi
 
     def __repr__(self):
         return '<User %r>' % self.username
