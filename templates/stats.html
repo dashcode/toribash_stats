@@ -21,10 +21,10 @@
             [new Date({{stat.time.year}},{{stat.time.month - 1}},{{stat.time.day}},{{stat.time.hour}},{{stat.time.minute}}),
               {{-stat.tc-}},
               {{-stat.qi-}},
-              {{-stat.winratio or 0.0-}},
-              {{-stat.elo or 0.0-}},
-              {{-stat.posts or 0-}},
-              {{-stat.achiev_progress or 0-}}
+              {{-stat.winratio or 'null'-}},
+              {{-stat.elo or 'null'-}},
+              {{-stat.posts or 'null'-}},
+              {{-stat.achiev_progress or 'null'-}}
             ],
           {% endfor -%}
         ]);
@@ -51,7 +51,26 @@
           ]
         };
 
-        //var chart = new google.charts.Line(document.getElementById('linechart'));
+        columns = ['tc', 'qi', 'winratio', 'elo', 'posts', 'achiev_progress'];
+        var hidden = [];
+        for (var i = 0; i < columns.length; i++) {
+          (function(i) {
+            document.getElementById('show_' + columns[i]).addEventListener('change', function() {
+              if (this.checked) {
+                var index = hidden.indexOf(i + 1);
+                if (index !== -1) {
+                  hidden.splice(index, 1);
+                }
+              } else {
+                hidden.push(i + 1);
+              }
+              view = new google.visualization.DataView(data);
+              view.hideColumns(hidden);
+              chart.draw(view, options);
+            });
+          })(i);
+        }
+
         var chart = new google.visualization.{{charttype}}(document.getElementById('linechart'));
 
         chart.draw(data, options);
@@ -68,6 +87,20 @@
         <li {% if request.path == path %} class='active' {% endif %}><a href={{path}}>{{period}}</a></li>
       {% endfor -%}
     </ul>
-    <div id="linechart" style="width: 900px; height: 500px"></div>
+    <table>
+      <tr>
+        <td>
+          <div id="linechart" style="width: 900px; height: 500px"></div>
+        </td>
+        <td>
+          <input type="checkbox" id="show_tc" checked /> tc<br />
+          <input type="checkbox" id="show_qi" checked /> qi<br />
+          <input type="checkbox" id="show_winratio" checked /> win ratio<br />
+          <input type="checkbox" id="show_elo" checked /> elo<br />
+          <input type="checkbox" id="show_posts" checked /> posts<br />
+          <input type="checkbox" id="show_achiev_progress" checked /> achievement progress<br />
+        </td>
+      </tr>
+    </table>
   </body>
 </html>
