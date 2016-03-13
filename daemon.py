@@ -75,7 +75,7 @@ def main():
 
         logger.info('Downloading client list')
         clients = get_clients()
-        usernames = list(set(client['username'] for client in clients))
+        usernames = list(set(client['username'].lower() for client in clients))
         pages = len(usernames) / 15
         queries = []
 
@@ -123,13 +123,17 @@ def main():
                           user_info['achiev_progress'], user['id']))
                     user_id = user['id']
 
-                cursor.execute("""
-                    INSERT INTO stat
-                    (user_id, tc, qi, time, winratio, elo, posts, achiev_progress)
-                    VALUES(%s, %s, %s, UTC_TIMESTAMP(), %s, %s, %s, %s)
-                """, (user_id, user_info['tc'], user_info['qi'],
-                      user_info['winratio'], user_info['elo'],
-                      user_info['posts'], user_info['achiev_progress']))
+                try:
+                    cursor.execute("""
+                        INSERT INTO stat
+                        (user_id, tc, qi, time, winratio, elo, posts, achiev_progress)
+                        VALUES(%s, %s, %s, UTC_TIMESTAMP(), %s, %s, %s, %s)
+                    """, (user_id, user_info['tc'], user_info['qi'],
+                        user_info['winratio'], user_info['elo'],
+                        user_info['posts'], user_info['achiev_progress']))
+                except MySQLdb.Error:
+                    # Most probably a duplicate key
+                    pass
 
             db.commit()
 
