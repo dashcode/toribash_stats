@@ -102,15 +102,18 @@ def main():
                 cursor.execute("SELECT * FROM user WHERE username=%s", (user_info['username'],))
                 user = cursor.fetchone()
 
+                tc = user_info['tc'] or 0
+                winratio = user_info['winratio'] or 0.0
+                elo = user_info['elo'] or 1600
+
                 if user is None:
                     cursor.execute("""
                         INSERT INTO user
                         (username, current_tc, current_qi, current_winratio,
                          current_elo, current_posts)
                         VALUES(%s, %s, %s, %s, %s, %s)
-                    """, (user_info['username'], user_info['tc'],
-                          user_info['qi'], user_info['winratio'],
-                          user_info['elo'], user_info['posts']))
+                    """, (user_info['username'], tc, user_info['qi'],
+                          winratio, elo, user_info['posts']))
 
                     user_id = cursor.lastrowid
                 else:
@@ -119,8 +122,8 @@ def main():
                         current_tc=%s, current_qi=%s, current_winratio=%s,
                         current_elo=%s, current_posts=%s
                         WHERE id=%s
-                    """, (user_info['tc'], user_info['qi'], user_info['winratio'],
-                          user_info['elo'], user_info['posts'], user['id']))
+                    """, (tc, user_info['qi'], winratio, elo,
+                          user_info['posts'], user['id']))
                     user_id = user['id']
 
                 try:
@@ -128,9 +131,8 @@ def main():
                         INSERT INTO stat
                         (user_id, tc, qi, time, winratio, elo, posts)
                         VALUES(%s, %s, %s, UTC_TIMESTAMP(), %s, %s, %s)
-                    """, (user_id, user_info['tc'], user_info['qi'],
-                        user_info['winratio'], user_info['elo'],
-                        user_info['posts']))
+                    """, (user_id, tc, user_info['qi'], winratio, elo,
+                          user_info['posts']))
                 except MySQLdb.Error:
                     # Most probably a duplicate key
                     pass
