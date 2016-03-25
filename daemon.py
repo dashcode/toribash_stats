@@ -108,8 +108,7 @@ def main():
                         VALUES(%s, %s, %s, %s, %s, %s, %s)
                     """, (user_info['username'], user_info['tc'],
                           user_info['qi'], user_info['winratio'],
-                          user_info['elo'], user_info['posts'],
-                          user_info['achiev_progress']))
+                          user_info['elo'], user_info['posts']))
 
                     user_id = cursor.lastrowid
                 else:
@@ -119,18 +118,17 @@ def main():
                         current_elo=%s, current_posts=%s, current_achiev_progress=%s
                         WHERE id=%s
                     """, (user_info['tc'], user_info['qi'], user_info['winratio'],
-                          user_info['elo'], user_info['posts'],
-                          user_info['achiev_progress'], user['id']))
+                          user_info['elo'], user_info['posts'], user['id']))
                     user_id = user['id']
 
                 try:
                     cursor.execute("""
                         INSERT INTO stat
-                        (user_id, tc, qi, time, winratio, elo, posts, achiev_progress)
+                        (user_id, tc, qi, time, winratio, elo, posts)
                         VALUES(%s, %s, %s, UTC_TIMESTAMP(), %s, %s, %s, %s)
                     """, (user_id, user_info['tc'], user_info['qi'],
                         user_info['winratio'], user_info['elo'],
-                        user_info['posts'], user_info['achiev_progress']))
+                        user_info['posts']))
                 except MySQLdb.Error:
                     # Most probably a duplicate key
                     pass
