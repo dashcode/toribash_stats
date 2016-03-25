@@ -106,8 +106,8 @@ def main():
                     cursor.execute("""
                         INSERT INTO user
                         (username, current_tc, current_qi, current_winratio,
-                         current_elo, current_posts, current_achiev_progress)
-                        VALUES(%s, %s, %s, %s, %s, %s, %s)
+                         current_elo, current_posts)
+                        VALUES(%s, %s, %s, %s, %s, %s)
                     """, (user_info['username'], user_info['tc'],
                           user_info['qi'], user_info['winratio'],
                           user_info['elo'], user_info['posts']))
@@ -117,7 +117,7 @@ def main():
                     cursor.execute("""
                         UPDATE user SET
                         current_tc=%s, current_qi=%s, current_winratio=%s,
-                        current_elo=%s, current_posts=%s, current_achiev_progress=%s
+                        current_elo=%s, current_posts=%s
                         WHERE id=%s
                     """, (user_info['tc'], user_info['qi'], user_info['winratio'],
                           user_info['elo'], user_info['posts'], user['id']))
@@ -127,7 +127,7 @@ def main():
                     cursor.execute("""
                         INSERT INTO stat
                         (user_id, tc, qi, time, winratio, elo, posts)
-                        VALUES(%s, %s, %s, UTC_TIMESTAMP(), %s, %s, %s, %s)
+                        VALUES(%s, %s, %s, UTC_TIMESTAMP(), %s, %s, %s)
                     """, (user_id, user_info['tc'], user_info['qi'],
                         user_info['winratio'], user_info['elo'],
                         user_info['posts']))
