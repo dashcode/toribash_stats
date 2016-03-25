@@ -86,7 +86,7 @@ def main():
                     users_info = requests.get(BASE_URL + 'tori_stats.php', params={
                         'format': 'json',
                         'username': ','.join(users_chunk)
-                    }).json()
+                    }, timeout=30).json()
                     break
                 except Exception:
                     time.sleep(2 ** i)
