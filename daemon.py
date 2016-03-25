@@ -76,10 +76,10 @@ def main():
         logger.info('Downloading client list')
         clients = get_clients()
         usernames = list(set(client['username'].lower() for client in clients))
-        pages = len(usernames) / 15
+        pages = len(usernames) / 40
         queries = []
 
-        for page, users_chunk in enumerate(chunkify(usernames, 15)):
+        for page, users_chunk in enumerate(chunkify(usernames, 40)):
             logger.info('Downloading user stats %i/%i', page, pages)
             for i in range(5):
                 try:
