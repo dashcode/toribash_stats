@@ -93,7 +93,9 @@ def main():
             else:
                 continue
 
-            if type(users_info) is not list:
+            if 'count' in users_info:
+                users_info = users_info['users']
+            else:
                 users_info = [users_info]
 
             for user_info in users_info:
