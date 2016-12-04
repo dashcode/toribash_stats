@@ -90,10 +90,10 @@
     <a href='{{url_for('index')}}'>Index</a>
     <ul>
       {% set path = url_for('stats', username=user.username) -%}
-      <li {% if request.path == path %} class='active' {% endif %}><a href={{path}}>All</a></li>
+      <li{% if request.path == path %} class='active'{% endif %}><a href={{path}}>All</a></li>
       {% for period in periods %}
         {%- set path = url_for('stats_diff', username=user.username, period=period) -%}
-        <li {% if request.path == path %} class='active' {% endif %}><a href={{path}}>{{period}}</a></li>
+        <li{% if request.path == path %} class='active'{% endif %}><a href={{path}}>{{period}}</a></li>
       {% endfor -%}
     </ul>
     <table>
