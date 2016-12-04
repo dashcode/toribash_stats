@@ -80,7 +80,8 @@ def main():
         usernames = set(client['username'].lower() for client in clients)
 
         for i, user in enumerate(usernames, start=1):
-            logger.info('Downloading user stats %i/%i', i, len(usernames))
+            logger.info("Downloading %s's stats %i/%i",
+                        user, i, len(usernames))
 
             for i in range(5):
                 try:
