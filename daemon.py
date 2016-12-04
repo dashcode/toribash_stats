@@ -106,7 +106,7 @@ def main():
                 INSERT INTO user
                 (username, current_tc, current_qi, current_winratio,
                  current_elo, current_posts)
-                VALUES(%s, %s, %s, %, %s, %s)
+                VALUES(%s, %s, %s, %s, %s, %s)
                 ON DUPLICATE KEY UPDATE
                     current_tc=VALUES(current_tc),
                     current_qi=VALUES(current_qi),
