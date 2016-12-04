@@ -61,6 +61,8 @@ def index():
             g.cursor.execute("""
                 SELECT *
                 FROM user
+                INNER JOIN stat ON user.id=stat.user_id
+                GROUP BY user.id
                 ORDER BY IFNULL((
                     SELECT {0}
                     FROM stat
@@ -73,34 +75,10 @@ def index():
 
             period_earnings = []
             for user in g.cursor.fetchall():
-                g.cursor.execute("""
-                    SELECT {} as amount
-                    FROM stat
-                    WHERE user_id=%s AND UNIX_TIMESTAMP(time) > UNIX_TIMESTAMP() - %s
-                    ORDER BY time ASC
-                """.format(tc_qi), (user['id'], period_length))
-
-                old_amount = g.cursor.fetchone()
-
-                if not old_amount:
-                    continue
-
-                g.cursor.execute("""
-                    SELECT {} as amount
-                    FROM stat
-                    WHERE user_id=%s
-                    ORDER BY time DESC
-                """.format(tc_qi), (user['id'],))
-
-                current_amount = g.cursor.fetchone()
-
-                if not current_amount:
-                    continue
-
                 period_earnings.append({
                     'username': user['username'],
-                    tc_qi: old_amount['amount'],
-                    'current_' + tc_qi: current_amount['amount']
+                    tc_qi: user[tc_qi],
+                    'current_' + tc_qi: user['current_' + tc_qi]
                 })
             top_list.append((period, period_earnings))
 
