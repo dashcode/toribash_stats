@@ -18,7 +18,7 @@ import datetime
 import json
 import os
 
-#from model import db, User, Stat
+from daemon import UPDATE_CYCLE
 
 app = Flask(__name__)
 app.secret_key = os.urandom(32)
@@ -230,8 +230,8 @@ def online_users():
     g.cursor.execute("""
         SELECT COUNT(user_id) as online, time
         FROM stat
-        GROUP BY UNIX_TIMESTAMP(time) DIV 300
-    """)
+        GROUP BY UNIX_TIMESTAMP(time) DIV %s
+    """, (UPDATE_CYCLE,))
     online_users = g.cursor.fetchall()
 
     return render_template('online_users.html', online_users=online_users)
