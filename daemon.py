@@ -1,10 +1,12 @@
 #! /usr/bin/python3
 
+import hashlib
 import json
 import logging
 import socket
 import time
 
+from bs4 import BeautifulSoup
 import requests
 
 import MySQLdb
@@ -20,6 +22,9 @@ ch.setLevel(logging.DEBUG)
 formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 ch.setFormatter(formatter)
 logger.addHandler(ch)
+
+BASE_URL = 'http://forum.toribash.com/'
+UPDATE_CYCLE = 15 * 60
 
 
 def get_clients():
@@ -64,8 +69,30 @@ def get_clients():
     return clients
 
 
-BASE_URL = 'http://forum.toribash.com/'
-UPDATE_CYCLE = 15 * 60
+def get_forum_clients():
+    session = requests.session()
+
+    password_hash = hashlib.md5(
+        config['account']['password'].encode()).hexdigest()
+
+    session.post(BASE_URL + 'login.php?do=login', {
+        'vb_login_username':        config['account']['username'],
+        'vb_login_password':        '',
+        'vb_login_md5password':     password_hash,
+        'vb_login_md5password_utf': password_hash,
+
+        'cookieuser': 1, #stay logged in
+        'do': 'login',
+        's': '',
+        'securitytoken': 'guest'
+    })
+
+    soup = BeautifulSoup(session.get(BASE_URL).text, 'lxml')
+    users = (soup.find(id='collapseobj_forumhome_activeusers')
+             .find_all('div')[2]
+             .find_all('a'))
+
+    return [user.text for user in users]
 
 
 def main():
@@ -76,8 +103,14 @@ def main():
         loop_start = time.monotonic()
 
         logger.info('Downloading client list')
-        clients = get_clients()
-        usernames = set(client['username'].lower() for client in clients)
+
+        try:
+            clients = get_clients()
+            usernames = set(client['username'].lower() for client in clients)
+            usernames.update(client.lower() for client in get_forum_clients())
+        except Exception:
+            time.sleep(30)
+            continue
 
         for i, user in enumerate(usernames, start=1):
             logger.info("Downloading %s's stats %i/%i",
