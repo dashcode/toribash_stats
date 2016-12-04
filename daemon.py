@@ -65,7 +65,7 @@ def get_clients():
 
 
 BASE_URL = 'http://forum.toribash.com/'
-UPDATE_CYCLE = 5 * 60
+UPDATE_CYCLE = 15 * 60
 
 
 def main():
