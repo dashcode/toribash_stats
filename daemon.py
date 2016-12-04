@@ -94,6 +94,9 @@ def main():
             else:
                 continue
 
+            if user_info['qi'] == 0:
+                continue
+
             cursor.execute("SELECT * FROM user WHERE username=%s", (user_info['username'],))
             user = cursor.fetchone()
 
