@@ -54,9 +54,17 @@ def page_not_found(e):
 def index():
     top_tc = []
     top_qi = []
+    top_posts = []
     top_tc_spenders = []
 
-    for tc_qi, top_list, order, ifnull in (('tc', top_tc, 'ASC', 2**32-1), ('qi', top_qi, 'ASC', 2**32-1), ('tc', top_tc_spenders, 'DESC', 0)):
+    top_query_data = [
+        ('tc',    top_tc,          'ASC',  2**32-1),
+        ('qi',    top_qi,          'ASC',  2**32-1),
+        ('posts', top_posts,       'ASC',  2**31-1),
+        ('tc',    top_tc_spenders, 'DESC', 0)
+    ]
+
+    for tc_qi, top_list, order, ifnull in top_query_data:
         for period, period_length in periods.items():
             g.cursor.execute("""
                 SELECT *
@@ -99,6 +107,14 @@ def index():
     top_qi_all = g.cursor.fetchall()
 
     g.cursor.execute("""
+        SELECT current_posts as posts, username
+        FROM user
+        ORDER BY current_posts DESC
+        LIMIT 25
+    """)
+    top_posts_all = g.cursor.fetchall()
+
+    g.cursor.execute("""
         SELECT current_winratio as winratio, username
         FROM user
         WHERE current_qi >= 500
@@ -110,9 +126,11 @@ def index():
     return render_template('index.html',
                            top_tc=top_tc,
                            top_qi=top_qi,
+                           top_posts=top_posts,
                            top_tc_spenders=top_tc_spenders,
                            top_tc_all=top_tc_all,
                            top_qi_all=top_qi_all,
+                           top_posts_all=top_posts_all,
                            top_winratio_all=top_winratio_all)
 
 @app.route('/stats/<username>')

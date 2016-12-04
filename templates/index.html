@@ -56,6 +56,16 @@
             </ol>
           {% endfor -%}
         </td>
+        <td>
+          {% for period, top in top_posts -%}
+            <h3>{{period}} posters</h3>
+            <ol>
+              {% for user in top -%}
+                <li><a href="{{url_for('stats', username=user.username)}}">{{user.username}}</a> {{user.current_posts - user.posts}}</li>
+              {% endfor -%}
+            </ol>
+          {% endfor -%}
+        </td>
       </tr>
       <tr>
         <td>
@@ -79,6 +89,14 @@
           <ol>
             {% for user in top_winratio_all -%}
               <li><a href="{{url_for('stats', username=user.username)}}">{{user.username}}</a> {{user.winratio}}</li>
+            {% endfor -%}
+          </ol>
+        </td>
+        <td>
+          <h3>Top posters</h3>
+          <ol>
+            {% for user in top_posts_all -%}
+              <li><a href="{{url_for('stats', username=user.username)}}">{{user.username}}</a> {{user.posts}}</li>
             {% endfor -%}
           </ol>
         </td>
