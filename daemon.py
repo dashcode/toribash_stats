@@ -2,9 +2,10 @@
 
 import json
 import logging
-import requests
 import socket
 import time
+
+import requests
 
 import MySQLdb
 import MySQLdb.cursors
@@ -19,6 +20,7 @@ ch.setLevel(logging.DEBUG)
 formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 ch.setFormatter(formatter)
 logger.addHandler(ch)
+
 
 def get_clients():
     clients = []
@@ -61,10 +63,10 @@ def get_clients():
     sock.close()
     return clients
 
-chunkify = lambda l, n: (l[i:i+n] for i in range(0, len(l), n))
 
 BASE_URL = 'http://forum.toribash.com/'
 UPDATE_CYCLE = 5 * 60
+
 
 def main():
     db = MySQLdb.connect(**config['db'])
@@ -75,21 +77,16 @@ def main():
 
         logger.info('Downloading client list')
         clients = get_clients()
-        usernames = list(set(client['username'].lower() for client in clients))
-        pages = len(usernames) / 40
-        queries = []
+        usernames = set(client['username'].lower() for client in clients)
 
-        for page, users_chunk in enumerate(chunkify(usernames, 40)):
-            logger.info('Downloading user stats %i/%i', page, pages)
-            users_chunk.sort(reverse=True)
-            # We need to sort the users, otherwise tori_stats.php returns the
-            # stats out of order
+        for i, user in enumerate(usernames, start=1):
+            logger.info('Downloading user stats %i/%i', i, len(usernames))
 
             for i in range(5):
                 try:
-                    users_info = requests.get(BASE_URL + 'tori_stats.php', params={
+                    user_info = requests.get(BASE_URL + 'tori_stats.php', params={
                         'format': 'json',
-                        'username': ','.join(users_chunk)
+                        'username': user
                     }, timeout=30).json()
                     break
                 except Exception:
@@ -97,49 +94,43 @@ def main():
             else:
                 continue
 
-            if 'count' in users_info:
-                users_info = users_info['users']
+            cursor.execute("SELECT * FROM user WHERE username=%s", (user_info['username'],))
+            user = cursor.fetchone()
+
+            tc = user_info['tc'] or 0
+            winratio = user_info['winratio'] or 0.0
+            elo = user_info['elo'] or 1600
+
+            if user is None:
+                cursor.execute("""
+                    INSERT INTO user
+                    (username, current_tc, current_qi, current_winratio,
+                     current_elo, current_posts)
+                    VALUES(%s, %s, %s, %s, %s, %s)
+                """, (user_info['username'], tc, user_info['qi'],
+                      winratio, elo, user_info['posts']))
+
+                user_id = cursor.lastrowid
             else:
-                users_info = [users_info]
+                cursor.execute("""
+                    UPDATE user SET
+                    current_tc=%s, current_qi=%s, current_winratio=%s,
+                    current_elo=%s, current_posts=%s
+                    WHERE id=%s
+                """, (tc, user_info['qi'], winratio, elo,
+                      user_info['posts'], user['id']))
+                user_id = user['id']
 
-            for user_info in users_info:
-                cursor.execute("SELECT * FROM user WHERE username=%s", (user_info['username'],))
-                user = cursor.fetchone()
-
-                tc = user_info['tc'] or 0
-                winratio = user_info['winratio'] or 0.0
-                elo = user_info['elo'] or 1600
-
-                if user is None:
-                    cursor.execute("""
-                        INSERT INTO user
-                        (username, current_tc, current_qi, current_winratio,
-                         current_elo, current_posts)
-                        VALUES(%s, %s, %s, %s, %s, %s)
-                    """, (user_info['username'], tc, user_info['qi'],
-                          winratio, elo, user_info['posts']))
-
-                    user_id = cursor.lastrowid
-                else:
-                    cursor.execute("""
-                        UPDATE user SET
-                        current_tc=%s, current_qi=%s, current_winratio=%s,
-                        current_elo=%s, current_posts=%s
-                        WHERE id=%s
-                    """, (tc, user_info['qi'], winratio, elo,
-                          user_info['posts'], user['id']))
-                    user_id = user['id']
-
-                try:
-                    cursor.execute("""
-                        INSERT INTO stat
-                        (user_id, tc, qi, time, winratio, elo, posts)
-                        VALUES(%s, %s, %s, UTC_TIMESTAMP(), %s, %s, %s)
-                    """, (user_id, tc, user_info['qi'], winratio, elo,
-                          user_info['posts']))
-                except MySQLdb.Error:
-                    # Most probably a duplicate key
-                    pass
+            try:
+                cursor.execute("""
+                    INSERT INTO stat
+                    (user_id, tc, qi, time, winratio, elo, posts)
+                    VALUES(%s, %s, %s, UTC_TIMESTAMP(), %s, %s, %s)
+                """, (user_id, tc, user_info['qi'], winratio, elo,
+                      user_info['posts']))
+            except MySQLdb.Error:
+                # Most probably a duplicate key
+                pass
 
             db.commit()
 
