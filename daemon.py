@@ -87,7 +87,7 @@ def get_forum_clients():
         'securitytoken': 'guest'
     })
 
-    soup = BeautifulSoup(session.get(BASE_URL).text, 'lxml')
+    soup = BeautifulSoup(session.get(BASE_URL).text, 'html.parser')
     users = (soup.find(id='collapseobj_forumhome_activeusers')
              .find_all('div')[2]
              .find_all('a'))
