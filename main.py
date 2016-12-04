@@ -69,7 +69,7 @@ def index():
                     LIMIT 1
                 ), %s) - current_{0} {1}
                 LIMIT 10;
-            """.format(tc_qi, order), (period_length, ifnull)
+            """.format(tc_qi, order), (period_length, ifnull))
 
             period_earnings = []
             for user in g.cursor.fetchall():
