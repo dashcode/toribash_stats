@@ -97,40 +97,32 @@ def main():
             if user_info['qi'] == 0:
                 continue
 
-            cursor.execute("SELECT * FROM user WHERE username=%s", (user_info['username'],))
-            user = cursor.fetchone()
-
             tc = user_info['tc'] or 0
             winratio = user_info['winratio'] or 0.0
             elo = user_info['elo'] or 1600
 
-            if user is None:
-                cursor.execute("""
-                    INSERT INTO user
-                    (username, current_tc, current_qi, current_winratio,
-                     current_elo, current_posts)
-                    VALUES(%s, %s, %s, %s, %s, %s)
-                """, (user_info['username'], tc, user_info['qi'],
-                      winratio, elo, user_info['posts']))
-
-                user_id = cursor.lastrowid
-            else:
-                cursor.execute("""
-                    UPDATE user SET
-                    current_tc=%s, current_qi=%s, current_winratio=%s,
-                    current_elo=%s, current_posts=%s
-                    WHERE id=%s
-                """, (tc, user_info['qi'], winratio, elo,
-                      user_info['posts'], user['id']))
-                user_id = user['id']
+            cursor.execute("""
+                INSERT INTO user
+                (username, current_tc, current_qi, current_winratio,
+                 current_elo, current_posts)
+                VALUES(%s, %s, %s, %, %s, %s)
+                ON DUPLICATE KEY UPDATE
+                    current_tc=VALUES(current_tc),
+                    current_qi=VALUES(current_qi),
+                    current_winratio=VALUES(current_winratio),
+                    current_elo=VALUES(current_elo),
+                    current_posts=VALUES(current_posts)
+            """, (user_info['username'], tc, user_info['qi'],
+                  winratio, elo, user_info['posts']))
 
             try:
                 cursor.execute("""
                     INSERT INTO stat
                     (user_id, tc, qi, time, winratio, elo, posts)
-                    VALUES(%s, %s, %s, UTC_TIMESTAMP(), %s, %s, %s)
-                """, (user_id, tc, user_info['qi'], winratio, elo,
-                      user_info['posts']))
+                    VALUES((SELECT id FROM user WHERE username=%s),
+                           %s, %s, UTC_TIMESTAMP(), %s, %s, %s)
+                """, (user_info['username'], tc, user_info['qi'], winratio,
+                      elo, user_info['posts']))
             except MySQLdb.Error:
                 # Most probably a duplicate key
                 pass
