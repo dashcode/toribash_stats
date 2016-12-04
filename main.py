@@ -70,7 +70,7 @@ def index():
                     ORDER BY time ASC
                     LIMIT 1
                 ), %s) - current_{0} {1}
-                LIMIT 10;
+                LIMIT 25;
             """.format(tc_qi, order), (period_length, ifnull))
 
             period_earnings = []
@@ -86,7 +86,7 @@ def index():
         SELECT current_tc as tc, username
         FROM user
         ORDER BY current_tc DESC
-        LIMIT 10
+        LIMIT 25
     """)
     top_tc_all = g.cursor.fetchall()
 
@@ -94,7 +94,7 @@ def index():
         SELECT current_qi as qi, username
         FROM user
         ORDER BY current_qi DESC
-        LIMIT 10
+        LIMIT 25
     """)
     top_qi_all = g.cursor.fetchall()
 
@@ -103,7 +103,7 @@ def index():
         FROM user
         WHERE current_qi >= 500
         ORDER BY current_winratio DESC
-        LIMIT 10
+        LIMIT 25
     """)
     top_winratio_all = g.cursor.fetchall()
 
