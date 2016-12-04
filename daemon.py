@@ -81,6 +81,10 @@ def main():
 
         for page, users_chunk in enumerate(chunkify(usernames, 40)):
             logger.info('Downloading user stats %i/%i', page, pages)
+            users_chunk.sort(reverse=True)
+            # We need to sort the users, otherwise tori_stats.php returns the
+            # stats out of order
+
             for i in range(5):
                 try:
                     users_info = requests.get(BASE_URL + 'tori_stats.php', params={
