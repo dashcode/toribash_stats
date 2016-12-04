@@ -67,15 +67,15 @@ def index():
                     WHERE user.id=stat.user_id AND UNIX_TIMESTAMP(time) > UNIX_TIMESTAMP() - %s
                     ORDER BY time ASC
                     LIMIT 1
-                ), %s) - (
+                ), %s) - IFNULL(
                     SELECT {0}
                     FROM stat
                     WHERE user.id=stat.user_id
                     ORDER BY time DESC
                     LIMIT 1
-                ) {1}
+                ), %s) {1}
                 LIMIT 10;
-            """.format(tc_qi, order), (period_length, ifnull))
+            """.format(tc_qi, order), (period_length, ifnull, (2**31-1) - ifnull))
 
             period_earnings = []
             for user in g.cursor.fetchall():
