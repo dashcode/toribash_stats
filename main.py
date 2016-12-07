@@ -91,38 +91,27 @@ def index():
 
             top_list.append((period, g.cursor.fetchall()))
 
-    g.cursor.execute("""
-        SELECT current_tc as tc, username
-        FROM user
-        ORDER BY current_tc DESC
-        LIMIT 25
-    """)
-    top_tc_all = g.cursor.fetchall()
+    top_tc_all = []
+    top_qi_all = []
+    top_posts_all = []
+    top_winratio_all = []
 
-    g.cursor.execute("""
-        SELECT current_qi as qi, username
-        FROM user
-        ORDER BY current_qi DESC
-        LIMIT 25
-    """)
-    top_qi_all = g.cursor.fetchall()
+    all_tops = [
+        ('tc',       '',                        top_tc_all),
+        ('qi',       '',                        top_qi_all),
+        ('posts',    '',                        top_posts_all),
+        ('winratio', 'WHERE current_qi >= 500', top_winratio_all)
+    ]
 
-    g.cursor.execute("""
-        SELECT current_posts as posts, username
-        FROM user
-        ORDER BY current_posts DESC
-        LIMIT 25
-    """)
-    top_posts_all = g.cursor.fetchall()
-
-    g.cursor.execute("""
-        SELECT current_winratio as winratio, username
-        FROM user
-        WHERE current_qi >= 500
-        ORDER BY current_winratio DESC
-        LIMIT 25
-    """)
-    top_winratio_all = g.cursor.fetchall()
+    for stat, where, top_list in all_tops:
+        g.cursor.execute("""
+            SELECT current_{0} as {0}, username
+            FROM user
+            {1}
+            ORDER BY current_{0} DESC
+            LIMIT 25
+        """.format(stat, where))
+        top_list[:] = g.cursor.fetchall()
 
     return render_template('index.html',
                            top_tc=top_tc,
