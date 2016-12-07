@@ -89,14 +89,7 @@ def index():
                 LIMIT 25
             """.format(period, tc_qi, order))
 
-            period_earnings = []
-            for user in g.cursor.fetchall():
-                period_earnings.append({
-                    'username': user['username'],
-                    tc_qi: user[tc_qi],
-                    'current_' + tc_qi: user['current_' + tc_qi]
-                })
-            top_list.append((period, period_earnings))
+            top_list.append((period, g.cursor.fetchall()))
 
     g.cursor.execute("""
         SELECT current_tc as tc, username
