@@ -81,13 +81,13 @@ def index():
             )
         """.format(period), (period_length,))
 
-        for tc_qi, top_list, order in top_query_data:
+        for stat, top_list, order in top_query_data:
             g.cursor.execute("""
                 SELECT *
                 FROM ranking_{0}
                 ORDER BY {1} - current_{1} {2}
                 LIMIT 25
-            """.format(period, tc_qi, order))
+            """.format(period, stat, order))
 
             top_list.append((period, g.cursor.fetchall()))
 
