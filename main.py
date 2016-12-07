@@ -64,10 +64,10 @@ def index():
         ('tc',    top_tc_spenders, 'DESC')
     ]
 
-    for tc_qi, top_list, order in top_query_data:
-        for period, period_length in periods.items():
-            g.cursor.execute("""
-                SELECT *
+    for period, period_length in periods.items():
+        g.cursor.execute("""
+            CREATE TEMPORARY TABLE IF NOT EXISTS ranking_{0} AS (
+                SELECT user.*, stat.*
                 FROM user
                 INNER JOIN stat
                     ON user.id = stat.user_id
@@ -78,9 +78,16 @@ def index():
                     GROUP BY user_id
                 ) b ON b.user_id = stat.user_id AND
                        b.time = stat.time
-                ORDER BY stat.{0} - user.current_{0} {1}
-                LIMIT 25;
-            """.format(tc_qi, order), (period_length,))
+            )
+        """.format(period), (period_length,))
+
+        for tc_qi, top_list, order in top_query_data:
+            g.cursor.execute("""
+                SELECT *
+                FROM ranking_{0}
+                ORDER BY {1} - current_{1} {2}
+                LIMIT 25
+            """.format(period, tc_qi, order))
 
             period_earnings = []
             for user in g.cursor.fetchall():
