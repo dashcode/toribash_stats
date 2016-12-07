@@ -58,28 +58,29 @@ def index():
     top_tc_spenders = []
 
     top_query_data = [
-        ('tc',    top_tc,          'ASC',  2**32-1),
-        ('qi',    top_qi,          'ASC',  2**32-1),
-        ('posts', top_posts,       'ASC',  2**31-1),
-        ('tc',    top_tc_spenders, 'DESC', 0)
+        ('tc',    top_tc,          'ASC'),
+        ('qi',    top_qi,          'ASC'),
+        ('posts', top_posts,       'ASC'),
+        ('tc',    top_tc_spenders, 'DESC')
     ]
 
-    for tc_qi, top_list, order, ifnull in top_query_data:
+    for tc_qi, top_list, order in top_query_data:
         for period, period_length in periods.items():
             g.cursor.execute("""
                 SELECT *
                 FROM user
-                INNER JOIN stat ON user.id=stat.user_id
-                GROUP BY user.id
-                ORDER BY IFNULL((
-                    SELECT {0}
+                INNER JOIN stat
+                    ON user.id = stat.user_id
+                INNER JOIN (
+                    SELECT user_id, MIN(time) time
                     FROM stat
-                    WHERE user.id=stat.user_id AND UNIX_TIMESTAMP(time) > UNIX_TIMESTAMP() - %s
-                    ORDER BY time ASC
-                    LIMIT 1
-                ), %s) - current_{0} {1}
+                    WHERE UNIX_TIMESTAMP(time) > UNIX_TIMESTAMP() - %s
+                    GROUP BY user_id
+                ) b ON b.user_id = stat.user_id AND
+                       b.time = stat.time
+                ORDER BY stat.{0} - user.current_{0} {1}
                 LIMIT 25;
-            """.format(tc_qi, order), (period_length, ifnull))
+            """.format(tc_qi, order), (period_length,))
 
             period_earnings = []
             for user in g.cursor.fetchall():
