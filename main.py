@@ -173,7 +173,7 @@ def stats_diff(username, period):
 
         keys = ('tc', 'qi', 'winratio', 'elo', 'posts', 'achiev_progress')
         stats = g.cursor.fetchall()
-        periods_stats = {'time': (s['time'] for s in stats)}
+        period_stats = {'time': (s['time'] for s in stats)}
 
         for key in keys:
             period_stats.append(diff(s[key] for s in stats))
