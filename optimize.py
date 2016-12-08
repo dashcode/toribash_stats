@@ -36,3 +36,5 @@ cursor.executemany("""
 """, delete)
 
 db.commit()
+
+print("Deleted {} redundant rows".format(len(delete)))
