@@ -173,12 +173,12 @@ def stats_diff(username, period):
 
         keys = ('tc', 'qi', 'winratio', 'elo', 'posts')
         stats = g.cursor.fetchall()
-        period_stats = {'time': (s['time'] for s in stats)}
+        period_stats = [(s['time'] for s in stats)]
 
         for key in keys:
             period_stats.append(diff(s[key] for s in stats))
 
-        stats = ({key: stat for key, stat in zip(keys, stat_l)}
+        stats = ({key: stat for key, stat in zip(('time',) + keys, stat_l)}
                  for stat_l in zip(*period_stats))
 
         charttype = 'ColumnChart'
