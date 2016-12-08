@@ -81,7 +81,7 @@ def get_forum_clients():
         'vb_login_md5password':     password_hash,
         'vb_login_md5password_utf': password_hash,
 
-        'cookieuser': 1, #stay logged in
+        'cookieuser': 1,  # Stay logged in
         'do': 'login',
         's': '',
         'securitytoken': 'guest'
@@ -126,10 +126,12 @@ def main():
 
             for i in range(5):
                 try:
-                    user_info = requests.get(BASE_URL + 'tori_stats.php', params={
-                        'format': 'json',
-                        'username': user
-                    }, timeout=30).json()
+                    user_info = requests.get(
+                        BASE_URL + 'tori_stats.php',
+                        params={
+                            'format': 'json',
+                            'username': user
+                        }, timeout=30).json()
                     break
                 except Exception:
                     time.sleep(2 ** i)
