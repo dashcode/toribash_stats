@@ -171,23 +171,15 @@ def stats_diff(username, period):
             GROUP BY UNIX_TIMESTAMP(time) DIV %s
         """, (user['id'], periods[period]))
 
+        keys = ('tc', 'qi', 'winratio', 'elo', 'posts', 'achiev_progress')
         stats = g.cursor.fetchall()
+        periods_stats = {'time': (s['time'] for s in stats)}
 
-        time = (s['time'] for s in stats)
-        tc = diff(s['tc'] for s in stats)
-        qi = diff(s['qi'] for s in stats)
-        winratio = diff(s['winratio'] for s in stats)
-        elo = diff(s['elo'] for s in stats)
-        posts = diff(s['posts'] for s in stats)
-        achiev_progress = diff(s['achiev_progress'] for s in stats)
+        for key in keys:
+            period_stats.append(diff(s[key] for s in stats))
 
-        stats = ({'time': time_,
-                  'tc': tc_,
-                  'qi': qi_,
-                  'winratio': winratio,
-                  'elo': elo,
-                  'posts': posts,
-                  'achiev_progress': achiev_progress} for time_, tc_, qi_ in zip(time, tc, qi))
+        stats = ({key: stat for key, stat in zip(keys, stat_l)}
+                 for stat_l in zip(*period_stats))
 
         charttype = 'ColumnChart'
     else:
