@@ -148,7 +148,8 @@ def stats(username):
 @app.route('/stats/<username>/<period>')
 @cache.cached(timeout=5 * 60)
 def stats_diff(username, period):
-    def diff(it):
+    def diff(l):
+        it = iter(l)
         prev = next(it)
         for e in it:
             yield e - prev
@@ -176,9 +177,9 @@ def stats_diff(username, period):
         period_stats = [(s['time'] for s in stats)]
 
         for key in keys:
-            period_stats.append(diff(s[key] for s in stats))
+            period_stats.append(diff([s[key] for s in stats]))
 
-        stats = ({key: stat for key, stat in zip(('time',) + keys, stat_l)}
+        stats = (dict(zip(('time',) + keys, stat_l))
                  for stat_l in zip(*period_stats))
 
         charttype = 'ColumnChart'
