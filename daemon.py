@@ -133,6 +133,8 @@ def main():
                             'username': user
                         }, timeout=30).json()
                     break
+                except ValueError:
+                    break
                 except Exception:
                     time.sleep(2 ** i)
             else:
