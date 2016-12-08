@@ -38,14 +38,17 @@ periods_length = OrderedDict([
     ('last_month', 30 * 24 * 60 * 60)
 ])
 
+
 @app.before_request
 def before_request():
     g.db = MySQLdb.connect(**config['db'])
     g.cursor = g.db.cursor(MySQLdb.cursors.DictCursor)
 
+
 @app.errorhandler(404)
 def page_not_found(e):
     return render_template('404.html'), 404
+
 
 @app.route('/')
 @cache.cached(timeout=5 * 60)
@@ -121,6 +124,7 @@ def index():
                            top_posts_all=top_posts_all,
                            top_winratio_all=top_winratio_all)
 
+
 @app.route('/stats/<username>')
 @cache.cached(timeout=5 * 60)
 def stats(username):
@@ -133,11 +137,13 @@ def stats(username):
     g.cursor.execute("SELECT * FROM stat WHERE user_id=%s", (user['id'],))
     stats = g.cursor.fetchall()
 
-    return render_template('stats.html',
-                           user=user,
-                           stats=stats,
-                           charttype='LineChart',
-                           periods=list(periods.keys()) + list(periods_length.keys()))
+    return render_template(
+        'stats.html',
+        user=user,
+        stats=stats,
+        charttype='LineChart',
+        periods=list(periods.keys()) + list(periods_length.keys()))
+
 
 @app.route('/stats/<username>/<period>')
 @cache.cached(timeout=5 * 60)
@@ -196,11 +202,13 @@ def stats_diff(username, period):
 
         charttype = 'LineChart'
 
-    return render_template('stats.html',
-                           user=user,
-                           stats=stats,
-                           charttype=charttype,
-                           periods=list(periods.keys()) + list(periods_length.keys()))
+    return render_template(
+        'stats.html',
+        user=user,
+        stats=stats,
+        charttype=charttype,
+        periods=list(periods.keys()) + list(periods_length.keys()))
+
 
 @app.route('/online_users')
 @cache.cached(timeout=5 * 60)
@@ -212,6 +220,7 @@ def online_users():
 
     return render_template('online_users.html',
                            online_users=g.cursor.fetchall())
+
 
 if __name__ == '__main__':
     enable_pretty_logging()
