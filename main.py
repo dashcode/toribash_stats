@@ -171,7 +171,7 @@ def stats_diff(username, period):
             GROUP BY UNIX_TIMESTAMP(time) DIV %s
         """, (user['id'], periods[period]))
 
-        keys = ('tc', 'qi', 'winratio', 'elo', 'posts', 'achiev_progress')
+        keys = ('tc', 'qi', 'winratio', 'elo', 'posts')
         stats = g.cursor.fetchall()
         period_stats = {'time': (s['time'] for s in stats)}
 

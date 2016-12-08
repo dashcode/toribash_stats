@@ -14,7 +14,6 @@
         data.addColumn('number', 'winratio');
         data.addColumn('number', 'elo');
         data.addColumn('number', 'posts');
-        data.addColumn('number', 'achievement progress');
 
         data.addRows([
           {% for stat in stats -%}
@@ -23,8 +22,7 @@
               {{-stat.qi-}},
               {{-stat.winratio or 'null'-}},
               {{-stat.elo or 'null'-}},
-              {{-stat.posts or 'null'-}},
-              {{-stat.achiev_progress or 'null'-}}
+              {{-stat.posts or 'null'-}}
             ],
           {% endfor -%}
         ]);
@@ -51,7 +49,7 @@
           ]
         };
 
-        columns = ['tc', 'qi', 'winratio', 'elo', 'posts', 'achiev_progress'];
+        columns = ['tc', 'qi', 'winratio', 'elo', 'posts'];
         var hidden = [];
         for (var i = 0; i < columns.length; i++) {
           (function(i) {
@@ -128,7 +126,6 @@
           <input type="checkbox" id="show_winratio" checked /> win ratio<br />
           <input type="checkbox" id="show_elo" checked /> elo<br />
           <input type="checkbox" id="show_posts" checked /> posts<br />
-          <input type="checkbox" id="show_achiev_progress" checked /> achievement progress<br />
         </td>
       </tr>
     </table>
