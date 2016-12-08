@@ -105,12 +105,20 @@ def main():
         logger.info('Downloading client list')
 
         try:
-            clients = get_clients()
-            usernames = set(client['username'].lower() for client in clients)
-            usernames.update(client.lower() for client in get_forum_clients())
+            ingame_clients = set(c['username'].lower() for c in get_clients())
+            forum_clients = set(c.lower() for c in get_forum_clients())
+            usernames = ingame_clients | forum_clients
         except Exception:
             time.sleep(30)
             continue
+
+        cursor.execute("""
+            INSERT INTO online_user
+            (users_ingame, users_forum, time)
+            VALUES(%s, %s, UTC_TIMESTAMP())
+        """, (len(ingame_clients), len(forum_clients)))
+
+        db.commit()
 
         for i, user in enumerate(usernames, start=1):
             logger.info("Downloading %s's stats %i/%i",

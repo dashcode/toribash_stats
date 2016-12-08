@@ -9,12 +9,16 @@
 
         var data = new google.visualization.DataTable();
         data.addColumn('date', 'Date');
-        data.addColumn('number', 'Online Users');
+        data.addColumn('number', 'Online users');
+        data.addColumn('number', 'Online users ingame');
+        data.addColumn('number', 'Online users in forum');
 
         data.addRows([
           {% for row in online_users -%}
             [new Date({{row.time.year}},{{row.time.month - 1}},{{row.time.day}},{{row.time.hour}},{{row.time.minute}}),
-              {{-row.online-}}
+              {{-row.users_ingame + row.users_forum-}},
+              {{-row.users_ingame-}},
+              {{-row.users_forum-}}
             ],
           {% endfor -%}
         ]);

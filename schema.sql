@@ -24,3 +24,10 @@ CREATE TABLE `stat` (
   KEY `user_id_time` (`user_id`,`time`),
   CONSTRAINT `stat_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1
+
+CREATE TABLE `online_user` (
+  `time` datetime NOT NULL,
+  `users_ingame` int(11) NOT NULL,
+  `users_forum` int(11) NOT NULL,
+  KEY `time` (`time`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1

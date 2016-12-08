@@ -18,8 +18,6 @@ import datetime
 import json
 import os
 
-from daemon import UPDATE_CYCLE
-
 app = Flask(__name__)
 app.secret_key = os.urandom(32)
 
@@ -208,13 +206,12 @@ def stats_diff(username, period):
 @cache.cached(timeout=5 * 60)
 def online_users():
     g.cursor.execute("""
-        SELECT COUNT(user_id) as online, time
-        FROM stat
-        GROUP BY UNIX_TIMESTAMP(time) DIV %s
-    """, (UPDATE_CYCLE,))
-    online_users = g.cursor.fetchall()
+        SELECT *
+        FROM online_user
+    """)
 
-    return render_template('online_users.html', online_users=online_users)
+    return render_template('online_users.html',
+                           online_users=g.cursor.fetchall())
 
 if __name__ == '__main__':
     enable_pretty_logging()
@@ -222,5 +219,5 @@ if __name__ == '__main__':
     tornado.options.parse_command_line()
 
     http_server = HTTPServer(WSGIContainer(app))
-    http_server.listen(5001)
+    http_server.listen(5004)
     IOLoop.instance().start()
