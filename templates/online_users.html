@@ -1,53 +1,43 @@
-<html>
-  <head>
-    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-    <script type="text/javascript">
-      google.charts.load('current', {'packages': ['line', 'corechart']});
-      google.charts.setOnLoadCallback(drawChart);
+{% extends "base.html" %}
+{% block head %}
+  {{super()}}
+  <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+  <script type="text/javascript">
+    google.charts.load('current', {'packages': ['line', 'corechart']});
+    google.charts.setOnLoadCallback(drawChart);
 
-      function drawChart() {
+    function drawChart() {
 
-        var data = new google.visualization.DataTable();
-        data.addColumn('date', 'Date');
-        data.addColumn('number', 'Online users');
-        data.addColumn('number', 'Online users ingame');
-        data.addColumn('number', 'Online users in forum');
+      var data = new google.visualization.DataTable();
+      data.addColumn('date', 'Date');
+      data.addColumn('number', 'Online users');
+      data.addColumn('number', 'Online users ingame');
+      data.addColumn('number', 'Online users in forum');
 
-        data.addRows([
-          {% for row in online_users -%}
-            [new Date({{row.time.year}},{{row.time.month - 1}},{{row.time.day}},{{row.time.hour}},{{row.time.minute}}),
-              {{-row.users_ingame + row.users_forum-}},
-              {{-row.users_ingame-}},
-              {{-row.users_forum-}}
-            ],
-          {% endfor -%}
-        ]);
+      data.addRows([
+        {% for row in online_users -%}
+          [new Date({{row.time.year}},{{row.time.month - 1}},{{row.time.day}},{{row.time.hour}},{{row.time.minute}}),
+            {{-row.users_ingame + row.users_forum-}},
+            {{-row.users_ingame-}},
+            {{-row.users_forum-}}
+          ],
+        {% endfor -%}
+      ]);
 
-        var options = {
-          chart: {
-            title: 'Online users',
-          },
-          hAxis: {showTextEvery: 5},
-          width: 900,
-          height: 500
-        };
+      var options = {
+        chart: {
+          title: 'Online users',
+        },
+        hAxis: {showTextEvery: 5},
+        width: 900,
+        height: 500
+      };
 
-        var chart = new google.visualization.LineChart(document.getElementById('linechart'));
-        chart.draw(data, options);
-      }
-    </script>
-    <script>
-      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-
-      ga('create', 'UA-16870004-9', 'auto');
-      ga('send', 'pageview');
-    </script>
-  </head>
-  <body>
-    <a href='{{url_for('index')}}'>Index</a>
-    <div id="linechart" style="width: 900px; height: 500px"></div>
-  </body>
-</html>
+      var chart = new google.visualization.LineChart(document.getElementById('linechart'));
+      chart.draw(data, options);
+    }
+  </script>
+{% endblock %}
+{% block content %}
+  <div id="linechart" style="width: 900px; height: 500px"></div>
+{% endblock %}

@@ -1,133 +1,123 @@
-<html>
-  <head>
-    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-    <script type="text/javascript">
-      google.charts.load('current', {'packages': ['line', 'corechart']});
-      google.charts.setOnLoadCallback(drawChart);
+{% extends "base.html" %}
+{% block head %}
+  {{super()}}
+  <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+  <script type="text/javascript">
+    google.charts.load('current', {'packages': ['line', 'corechart']});
+    google.charts.setOnLoadCallback(drawChart);
 
-      function drawChart() {
+    function drawChart() {
 
-        var data = new google.visualization.DataTable();
-        data.addColumn('date', 'Date');
-        data.addColumn('number', 'tc');
-        data.addColumn('number', 'qi');
-        data.addColumn('number', 'winratio');
-        data.addColumn('number', 'elo');
-        data.addColumn('number', 'posts');
+      var data = new google.visualization.DataTable();
+      data.addColumn('date', 'Date');
+      data.addColumn('number', 'tc');
+      data.addColumn('number', 'qi');
+      data.addColumn('number', 'winratio');
+      data.addColumn('number', 'elo');
+      data.addColumn('number', 'posts');
 
-        data.addRows([
-          {% for stat in stats -%}
-            [new Date({{stat.time.year}},{{stat.time.month - 1}},{{stat.time.day}},{{stat.time.hour}},{{stat.time.minute}}),
-              {{-stat.tc-}},
-              {{-stat.qi-}},
-              {{-stat.winratio or 'null'-}},
-              {{-stat.elo or 'null'-}},
-              {{-stat.posts or 'null'-}}
-            ],
-          {% endfor -%}
-        ]);
+      data.addRows([
+        {% for stat in stats -%}
+          [new Date({{stat.time.year}},{{stat.time.month - 1}},{{stat.time.day}},{{stat.time.hour}},{{stat.time.minute}}),
+            {{-stat.tc-}},
+            {{-stat.qi-}},
+            {{-stat.winratio or 'null'-}},
+            {{-stat.elo or 'null'-}},
+            {{-stat.posts or 'null'-}}
+          ],
+        {% endfor -%}
+      ]);
 
-        var date_formatter = new google.visualization.DateFormat({pattern: 'yyyy-MM-dd HH:mm'});
-        date_formatter.format(data, 0);
+      var date_formatter = new google.visualization.DateFormat({pattern: 'yyyy-MM-dd HH:mm'});
+      date_formatter.format(data, 0);
 
-        var options = {
-          chart: {
-            title: '{{user.username}}\'s stats',
-          },
-          hAxis: {
-            showTextEvery: 5
-          },
-          width: 900,
-          height: 500,
-          series: [
-            {targetAxisIndex: 0},
-            {targetAxisIndex: 1},
-            {targetAxisIndex: 2},
-            {targetAxisIndex: 3},
-            {targetAxisIndex: 4},
-            {targetAxisIndex: 5}
-          ]
-        };
+      var options = {
+        chart: {
+          title: '{{user.username}}\'s stats',
+        },
+        hAxis: {
+          showTextEvery: 5
+        },
+        width: 900,
+        height: 500,
+        series: [
+          {targetAxisIndex: 0},
+          {targetAxisIndex: 1},
+          {targetAxisIndex: 2},
+          {targetAxisIndex: 3},
+          {targetAxisIndex: 4},
+          {targetAxisIndex: 5}
+        ]
+      };
 
-        columns = ['tc', 'qi', 'winratio', 'elo', 'posts'];
-        var hidden = [];
-        for (var i = 0; i < columns.length; i++) {
-          (function(i) {
-            document.getElementById('show_' + columns[i]).addEventListener('change', function() {
-              if (this.checked) {
-                var index = hidden.indexOf(i + 1);
-                if (index !== -1) {
-                  hidden.splice(index, 1);
-                }
-              } else {
-                hidden.push(i + 1);
+      columns = ['tc', 'qi', 'winratio', 'elo', 'posts'];
+      var hidden = [];
+      for (var i = 0; i < columns.length; i++) {
+        (function(i) {
+          document.getElementById('show_' + columns[i]).addEventListener('change', function() {
+            if (this.checked) {
+              var index = hidden.indexOf(i + 1);
+              if (index !== -1) {
+                hidden.splice(index, 1);
               }
-              view = new google.visualization.DataView(data);
-              view.hideColumns(hidden);
-              chart.draw(view, options);
-            });
-          })(i);
-        }
-
-        var chart = new google.visualization.{{charttype}}(document.getElementById('linechart'));
-
-        chart.draw(data, options);
+            } else {
+              hidden.push(i + 1);
+            }
+            view = new google.visualization.DataView(data);
+            view.hideColumns(hidden);
+            chart.draw(view, options);
+          });
+        })(i);
       }
-    </script>
-    <script>
-      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 
-      ga('create', 'UA-16870004-9', 'auto');
-      ga('send', 'pageview');
-    </script>
-  </head>
-  <body>
-    <a href="{{url_for('index')}}">Index</a>
-    <table>
-      <tr>
-        <td>
-          <ul>
-            {% set path = url_for('stats', username=user.username) -%}
-            <li{% if request.path == path %} class='active'{% endif %}><a href="{{path}}">All</a></li>
-            {% for period in periods %}
-              {%- set path = url_for('stats_diff', username=user.username, period=period) -%}
-              <li{% if request.path == path %} class='active'{% endif %}><a href="{{path}}">{{period}}</a></li>
-            {% endfor -%}
-          </ul>
-        </td>
-        <td>
-          <ul>
-            <li><a href="http://forum.toribash.com/member.php?username={{user.username}}">Forum profile</a></li>
-            <li><a href="http://forum.toribash.com/tori_trans_hist.php?username={{user.username}}">Transaction history</a></li>
-            <li><a href="http://forum.toribash.com/tori.php?username={{user.username}}">Account details</a></li>
-          </ul>
-        </td>
-        <td>
-          <ul>
-            <li>Tc: {{user.current_tc}}</li>
-            <li>Qi: {{user.current_qi}}</li>
-            <li>Win ratio: {{user.current_winratio}}%</li>
-            <li>Posts: {{user.current_posts}}</li>
-          </ul>
-        </td>
-      </tr>
-    </table>
-    <table>
-      <tr>
-        <td>
-          <div id="linechart" style="width: 900px; height: 500px"></div>
-        </td>
-        <td>
-          <input type="checkbox" id="show_tc" checked /> tc<br />
-          <input type="checkbox" id="show_qi" checked /> qi<br />
-          <input type="checkbox" id="show_winratio" checked /> win ratio<br />
-          <input type="checkbox" id="show_elo" checked /> elo<br />
-          <input type="checkbox" id="show_posts" checked /> posts<br />
-        </td>
-      </tr>
-    </table>
-  </body>
-</html>
+      var chart = new google.visualization.{{charttype}}(document.getElementById('linechart'));
+
+      chart.draw(data, options);
+    }
+  </script>
+{% endblock %}
+{% block content %}
+  <table>
+    <tr>
+      <td>
+        <ul>
+          {% set path = url_for('stats', username=user.username) -%}
+          <li{% if request.path == path %} class='active'{% endif %}><a href="{{path}}">All</a></li>
+          {% for period in periods %}
+            {%- set path = url_for('stats_diff', username=user.username, period=period) -%}
+            <li{% if request.path == path %} class='active'{% endif %}><a href="{{path}}">{{period}}</a></li>
+          {% endfor -%}
+        </ul>
+      </td>
+      <td>
+        <ul>
+          <li><a href="http://forum.toribash.com/member.php?username={{user.username}}">Forum profile</a></li>
+          <li><a href="http://forum.toribash.com/tori_trans_hist.php?username={{user.username}}">Transaction history</a></li>
+          <li><a href="http://forum.toribash.com/tori.php?username={{user.username}}">Account details</a></li>
+        </ul>
+      </td>
+      <td>
+        <ul>
+          <li>Tc: {{user.current_tc}}</li>
+          <li>Qi: {{user.current_qi}}</li>
+          <li>Win ratio: {{user.current_winratio}}%</li>
+          <li>Posts: {{user.current_posts}}</li>
+        </ul>
+      </td>
+    </tr>
+  </table>
+  <table>
+    <tr>
+      <td>
+        <div id="linechart" style="width: 900px; height: 500px"></div>
+      </td>
+      <td>
+        <input type="checkbox" id="show_tc" checked /> tc<br />
+        <input type="checkbox" id="show_qi" checked /> qi<br />
+        <input type="checkbox" id="show_winratio" checked /> win ratio<br />
+        <input type="checkbox" id="show_elo" checked /> elo<br />
+        <input type="checkbox" id="show_posts" checked /> posts<br />
+      </td>
+    </tr>
+  </table>
+{% endblock %}
