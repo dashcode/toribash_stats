@@ -35,6 +35,8 @@ cursor.executemany("""
     WHERE user_id = %s AND time = %s
 """, delete)
 
+cursor.execute("OPTIMIZE TABLE stat")
+
 db.commit()
 
 print("Deleted {} redundant rows".format(len(delete)))
