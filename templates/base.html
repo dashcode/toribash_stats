@@ -31,6 +31,9 @@
       {%- if request.path != "/online_users" %}
         <a href="{{url_for('online_users')}}">Online users</a>
       {% endif %}
+      {% if request.url_rule.endpoint != 'users' %}
+        <a href="{{url_for('users')}}">Users</a>
+      {% endif %}
       <form id="search_form">
         <input type="text" placeholder="Search User">
       </form>
