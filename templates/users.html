@@ -5,9 +5,9 @@
       <th></th>
       {% for row, order in order_by_rows %}
         {% if row == order_by %}
-          <th><a href="{{url_for('users', order_by=row, asc_desc='desc' if asc_desc == 'asc' else 'asc', page=page)}}">{{row}} {% if asc_desc == 'asc' %}▲{% else %}▼{% endif %}</a></th>
+          <th><a href="{{url_for('users', order_by=row, asc_desc='desc' if asc_desc == 'asc' else 'asc', page=1)}}">{{row}} {% if asc_desc == 'asc' %}▲{% else %}▼{% endif %}</a></th>
         {% else %}
-          <th><a href="{{url_for('users', order_by=row, asc_desc=order, page=page)}}">{{row}}</a></th>
+          <th><a href="{{url_for('users', order_by=row, asc_desc=order, page=1)}}">{{row}}</a></th>
         {% endif %}
       {% endfor %}
     </tr>
