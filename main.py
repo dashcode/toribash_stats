@@ -92,19 +92,14 @@ def index():
 
             top_list.append((period, g.cursor.fetchall()))
 
-    top_tc_all = []
-    top_qi_all = []
-    top_posts_all = []
-    top_winratio_all = []
-
     all_tops = [
-        ('tc',       '',                        top_tc_all),
-        ('qi',       '',                        top_qi_all),
-        ('posts',    '',                        top_posts_all),
-        ('winratio', 'WHERE current_qi >= 500', top_winratio_all)
+        ('tc',       '',                        'tc',        []),
+        ('qi',       '',                        'qi',        []),
+        ('posts',    '',                        'posters',   []),
+        ('winratio', 'WHERE current_qi >= 500', 'win ratio', [])
     ]
 
-    for stat, where, top_list in all_tops:
+    for stat, where, _, top_list in all_tops:
         g.cursor.execute("""
             SELECT current_{0} as {0}, username
             FROM user
@@ -112,17 +107,14 @@ def index():
             ORDER BY current_{0} DESC
             LIMIT 25
         """.format(stat, where))
-        top_list[:] = g.cursor.fetchall()
+        top_list.extend(g.cursor.fetchall())
 
     return render_template('index.html',
                            top_tc=top_tc,
                            top_qi=top_qi,
                            top_posts=top_posts,
                            top_tc_spenders=top_tc_spenders,
-                           top_tc_all=top_tc_all,
-                           top_qi_all=top_qi_all,
-                           top_posts_all=top_posts_all,
-                           top_winratio_all=top_winratio_all)
+                           all_tops=all_tops)
 
 
 @app.route('/stats/<username>')
@@ -252,5 +244,5 @@ if __name__ == '__main__':
     tornado.options.parse_command_line()
 
     http_server = HTTPServer(WSGIContainer(app))
-    http_server.listen(5001)
+    http_server.listen(5002)
     IOLoop.instance().start()

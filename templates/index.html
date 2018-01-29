@@ -44,38 +44,16 @@
       </td>
     </tr>
     <tr>
-      <td>
-        <h3>Top tc</h3>
-        <ol>
-          {% for user in top_tc_all -%}
-            <li><a href="{{url_for('stats', username=user.username)}}">{{user.username}}</a> {{user.tc}}</li>
-          {% endfor -%}
-        </ol>
-      </td>
-      <td>
-        <h3>Top qi</h3>
-        <ol>
-          {% for user in top_qi_all -%}
-            <li><a href="{{url_for('stats', username=user.username)}}">{{user.username}}</a> {{user.qi}}</li>
-          {% endfor -%}
-        </ol>
-      </td>
-      <td>
-        <h3>Top win ratio</h3>
-        <ol>
-          {% for user in top_winratio_all -%}
-            <li><a href="{{url_for('stats', username=user.username)}}">{{user.username}}</a> {{user.winratio}}</li>
-          {% endfor -%}
-        </ol>
-      </td>
-      <td>
-        <h3>Top posters</h3>
-        <ol>
-          {% for user in top_posts_all -%}
-            <li><a href="{{url_for('stats', username=user.username)}}">{{user.username}}</a> {{user.posts}}</li>
-          {% endfor -%}
-        </ol>
-      </td>
+      {% for stat, _, top_name, top_list in all_tops %}
+        <td>
+          <h3>Top {{top_name}}</h3>
+          <ol>
+            {% for user in top_list -%}
+              <li><a href="{{url_for('stats', username=user.username)}}">{{user.username}}</a> {{user[stat]}}</li>
+            {% endfor -%}
+          </ol>
+        </td>
+      {% endfor %}
     </tr>
   </table>
 {% endblock %}
