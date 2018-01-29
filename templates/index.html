@@ -46,7 +46,7 @@
     <tr>
       {% for stat, _, top_name, top_list in all_tops %}
         <td>
-          <h3>Top {{top_name}}</h3>
+          <h3><a href={{url_for('users', order_by=stat, asc_desc='desc', page=1)}}>Top {{top_name}}</a></h3>
           <ol>
             {% for user in top_list -%}
               <li><a href="{{url_for('stats', username=user.username)}}">{{user.username}}</a> {{user[stat]}}</li>
