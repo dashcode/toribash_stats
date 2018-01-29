@@ -13,7 +13,6 @@
       data.addColumn('number', 'tc');
       data.addColumn('number', 'qi');
       data.addColumn('number', 'winratio');
-      data.addColumn('number', 'elo');
       data.addColumn('number', 'posts');
 
       data.addRows([
@@ -22,7 +21,6 @@
             {{-stat.tc-}},
             {{-stat.qi-}},
             {{-stat.winratio or 'null'-}},
-            {{-stat.elo or 'null'-}},
             {{-stat.posts or 'null'-}}
           ],
         {% endfor -%}
@@ -50,7 +48,7 @@
         ]
       };
 
-      columns = ['tc', 'qi', 'winratio', 'elo', 'posts'];
+      columns = ['tc', 'qi', 'winratio', 'posts'];
       var hidden = [];
       for (var i = 0; i < columns.length; i++) {
         (function(i) {
@@ -118,7 +116,6 @@
         <input type="checkbox" id="show_tc" checked /> tc<br />
         <input type="checkbox" id="show_qi" checked /> qi<br />
         <input type="checkbox" id="show_winratio" checked /> win ratio<br />
-        <input type="checkbox" id="show_elo" checked /> elo<br />
         <input type="checkbox" id="show_posts" checked /> posts<br />
       </td>
     </tr>
