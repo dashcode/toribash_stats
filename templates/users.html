@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block content %}
+  <table>
+    <tr>
+      <th></th>
+      {% for row, order in order_by_rows %}
+        {% if row == order_by %}
+          <th><a href="{{url_for('users', order_by=row, asc_desc='desc' if asc_desc == 'asc' else 'asc', page=page)}}">{{row}} {% if asc_desc == 'asc' %}▲{% else %}▼{% endif %}</a></th>
+        {% else %}
+          <th><a href="{{url_for('users', order_by=row, asc_desc=order, page=page)}}">{{row}}</a></th>
+        {% endif %}
+      {% endfor %}
+    </tr>
+    {% for user in users %}
+      <tr>
+        <td>
+          {{loop.index + (page - 1) * users_per_page}}
+        </td>
+        <td>
+          <a href="{{url_for('stats', username=user.username)}}">{{user.username}}</a>
+        </td>
+        <td align="right">
+          {{user.current_tc}}
+        </td>
+        <td align="right">
+          {{user.current_qi}}
+        </td>
+        <td align="right">
+          {{user.current_winratio}}%
+        </td>
+        <td align="right">
+          {{user.current_posts}}
+        </td>
+      </tr>
+    {% endfor %}
+  </table>
+  <br>
+  {% for p in range([1, page - 4] | max, page + 5) %}
+    {% if p == page %}
+      {{p}}
+    {% else %}
+      <a href="{{url_for('users', order_by=order_by, asc_desc=asc_desc, page=p)}}">{{p}}</a>
+    {% endif %}
+  {% endfor %}
+{% endblock %}

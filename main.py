@@ -215,6 +215,37 @@ def online_users():
                            online_users=g.cursor.fetchall())
 
 
+@app.route('/users')
+@app.route('/users/<order_by>/<asc_desc>/<int:page>')
+@cache.cached(timeout=5*60)
+def users(order_by='username', asc_desc='asc', page=1):
+    order_by_rows = OrderedDict([
+        ('username', ('username', 'asc')),
+        ('tc', ('current_tc', 'desc')),
+        ('qi', ('current_qi', 'desc')),
+        ('winratio', ('current_winratio', 'desc')),
+        ('posts', ('current_posts', 'desc')),
+    ])
+
+    if order_by not in order_by_rows or asc_desc not in ('asc', 'desc'):
+        abort(404)
+
+    users_per_page = 100
+
+    g.cursor.execute("""
+        SELECT * FROM user
+        ORDER BY {} {}
+        LIMIT %s
+        OFFSET %s
+    """.format(order_by_rows[order_by][0], asc_desc),
+        (users_per_page, (page - 1) * users_per_page))
+
+    return render_template(
+        'users.html', users=g.cursor.fetchall(), users_per_page=users_per_page,
+        order_by_rows=[(k, v[1]) for k, v in order_by_rows.items()],
+        order_by=order_by, asc_desc=asc_desc, page=page)
+
+
 if __name__ == '__main__':
     enable_pretty_logging()
     tornado.options.options.log_file_prefix = 'access.log'
